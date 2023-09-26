@@ -325,10 +325,11 @@ void loop()
       if(fifoStatus & 0x80) {
           fifoSum = 0;
           for (uint8_t ii = 0; ii < fifoLevel; ii++) {
-          fifoSum += LPS28DFW.FIFOPressure(LPS28DFW_ADDRESS_0);
+          int32_t temp = LPS28DFW.FIFOPressure(LPS28DFW_ADDRESS_0);
+          if(ii > 0) fifoSum +=  temp; // discard first value if LPF is ODR/4, first two when LPF = ODR/9
           }
-          if(fifoLevel != 0) LPS28DFW0_avgFIFOPressure = ((float) fifoSum / (float) fifoLevel) * pressScale;
-          Serial.print("Average LPS28DFW0 FIFO Pressure (hPa) over "); Serial.print(fifoLevel); Serial.print(" samples = "); Serial.println(LPS28DFW0_avgFIFOPressure, 2);
+          if(fifoLevel > 1) LPS28DFW0_avgFIFOPressure = ((float) fifoSum / (float) (fifoLevel - 1)) * pressScale;
+          Serial.print("Average LPS28DFW0 FIFO Pressure (hPa) over "); Serial.print(fifoLevel - 1); Serial.print(" samples = "); Serial.println(LPS28DFW0_avgFIFOPressure, 2);
           LPS28DFW.FIFOReset(LPS28DFW_ADDRESS_0);               // reset LPS28DFW_0 FIFO
           LPS28DFW.initFIFO(LPS28DFW_ADDRESS_0, fifoMode, wtm); // restart LPS28DFW_0 FIFO
       }
@@ -365,10 +366,11 @@ void loop()
       if(fifoStatus & 0x80) {
           fifoSum = 0;
           for (uint8_t ii = 0; ii < fifoLevel; ii++) {
-          fifoSum += LPS28DFW.FIFOPressure(LPS28DFW_ADDRESS_1);
-          }
-          if(fifoLevel != 0) LPS28DFW1_avgFIFOPressure = ((float) fifoSum / (float) fifoLevel) * pressScale;
-          Serial.print("Average LPS28DFW1 FIFO Pressure (hPa) over "); Serial.print(fifoLevel); Serial.print(" samples = "); Serial.println(LPS28DFW1_avgFIFOPressure, 2);
+          int32_t temp = LPS28DFW.FIFOPressure(LPS28DFW_ADDRESS_1);
+          if(ii > 0) fifoSum +=  temp; // discard first value if LPF is ODR/4, first two when LPF = ODR/9
+           }
+          if(fifoLevel > 1) LPS28DFW1_avgFIFOPressure = ((float) fifoSum / (float) (fifoLevel - 1)) * pressScale;
+          Serial.print("Average LPS28DFW1 FIFO Pressure (hPa) over "); Serial.print(fifoLevel - 1); Serial.print(" samples = "); Serial.println(LPS28DFW1_avgFIFOPressure, 2);
           LPS28DFW.FIFOReset(LPS28DFW_ADDRESS_1);               // reset LPS28DFW_1 FIFO
           LPS28DFW.initFIFO(LPS28DFW_ADDRESS_1, fifoMode, wtm); // restart LPS28DFW_1 FIFO
       }
